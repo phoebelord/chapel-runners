@@ -1,0 +1,83 @@
+service: chapel-runners-api
+frameworkVersion: '3'
+
+custom:
+  tableName: 'users-table-${sls:stage}'
+  webpack:
+    webpackConfig: ./webpack.config.cjs
+    includeModules: true
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: eu-west-2
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - Fn::GetAtt: [ UsersTable, Arn ]
+  environment:
+    USERS_TABLE: ${self:custom.tableName}
+    VERIFY_TOKEN: ${file(./config/config.${opt:stage, 'dev'}.json):VERIFY_TOKEN}
+    CLIENT_ID: ${file(./config/config.${opt:stage, 'dev'}.json):CLIENT_ID}
+    CLIENT_SECRET: ${file(./config/config.${opt:stage, 'dev'}.json):CLIENT_SECRET}
+
+plugins:
+  - serverless-webpack
+  - serverless-offline
+
+functions:
+  webhook-new:
+    handler: src/webhook/webhookFunction.handler
+    events:
+      - httpApi:
+          method: GET
+          path: /webhook
+      - httpApi:
+          method: POST
+          path: /webhook
+  createUser:
+    handler: src/user/userFunction.handler
+    events:
+      - httpApi:
+          method: GET
+          path: /user
+
+resources:
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: PK
+            AttributeType: S
+          - AttributeName: SK
+            AttributeType: S
+          - AttributeName: GSI1-PK
+            AttributeType: S
+          - AttributeName: GSI1-SK
+            AttributeType: S
+        KeySchema:
+          - AttributeName: PK
+            KeyType: HASH
+          - AttributeName: SK
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: GSI1
+            KeySchema:
+              - AttributeName: GSI1-PK
+                KeyType: HASH
+              - AttributeName: GSI1-SK
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:custom.tableName}

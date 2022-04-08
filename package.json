@@ -1,0 +1,34 @@
+{
+  "name": "chapel-runners-api",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {
+    "axios": "^0.26.0",
+    "dayjs": "^1.11.0",
+    "express": "^4.17.1",
+    "serverless-http": "^2.7.0",
+    "ts-results": "^3.3.0",
+    "tslib": "^2.3.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.17.9",
+    "@babel/eslint-parser": "^7.17.0",
+    "@babel/preset-env": "^7.16.11",
+    "@types/aws-sdk": "^2.7.0",
+    "@types/express": "^4.17.13",
+    "@types/node": "^17.0.23",
+    "aws-sdk": "^2.1110.0",
+    "babel-loader": "^8.2.4",
+    "eslint": "^8.12.0",
+    "eslint-plugin-babel": "^5.3.1",
+    "fork-ts-checker-webpack-plugin": "^7.2.3",
+    "serverless": "^3.12.0",
+    "serverless-offline": "^8.5.0",
+    "serverless-webpack": "^5.6.1",
+    "ts-loader": "^9.2.8",
+    "typescript": "^4.6.3",
+    "webpack": "^5.72.0",
+    "webpack-node-externals": "^3.0.0"
+  }
+}
