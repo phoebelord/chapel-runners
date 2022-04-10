@@ -11,6 +11,10 @@ export const ITEMS: { [key: string]: { type: string; prefix: string } } = {
     type: "Challenge",
     prefix: "c#",
   },
+  CHALLENGE_SCORE: {
+    type: "ChallengeScore",
+    prefix: "cs#",
+  },
 };
 
 export const ENDPOINTS: { [key: string]: string } = {

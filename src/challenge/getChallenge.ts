@@ -9,6 +9,12 @@ export const getCurrentChallenge = async (): Promise<
   Result<Challenge, Errors>
 > => {
   const id = ITEMS.CHALLENGE.prefix + dayjs().format("MMMM-YYYY").toUpperCase();
+  return await getChallenge(id);
+};
+
+export const getChallenge = async (
+  id: string
+): Promise<Result<Challenge, Errors>> => {
   console.log("Fetching Challenge: ", id);
   const params: DocumentClient.GetItemInput = {
     TableName: ENV.USERS_TABLE,

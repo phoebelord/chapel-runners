@@ -127,10 +127,23 @@ export interface Challenge {
     distance?: {
       [key: number]: number;
     };
+    elevation?: {
+      [key: number]: number;
+    };
   };
   tags: {
     [key: string]: number;
   };
+}
+
+export interface ChallengeScore {
+  PK: string;
+  SK: string;
+  itemType: string;
+  "GSI1-PK"?: string;
+  "GSI1-SK"?: string;
+  teamName?: string;
+  points: number;
 }
 
 export interface Tag {
