@@ -7,7 +7,7 @@ import { Activity, Errors } from "../../types";
 export const fetchActivityFromDB = async (
   userId: number,
   activityId: number
-): Promise<Result<Activity, Errors>> => {
+): Promise<Result<Activity | undefined, Errors>> => {
   console.log(`Fetching user activity: ${userId} : ${activityId}`);
   const params: DocumentClient.GetItemInput = {
     TableName: ENV.USERS_TABLE,
@@ -28,6 +28,6 @@ export const fetchActivityFromDB = async (
     return Ok(Item as Activity);
   } else {
     console.info(`Activity not found: ${userId} : ${activityId}`);
-    return Err({ code: 404, message: "NOT_FOUND" });
+    return Ok(undefined);
   }
 };

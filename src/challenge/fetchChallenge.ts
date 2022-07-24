@@ -5,16 +5,16 @@ import { ENV, ITEMS } from "../constants";
 import { dbGet } from "../db";
 import { Challenge, Errors } from "../types";
 
-export const getCurrentChallenge = async (): Promise<
-  Result<Challenge, Errors>
+export const fetchCurrentChallenge = async (): Promise<
+  Result<Challenge | undefined, Errors>
 > => {
   const id = ITEMS.CHALLENGE.prefix + dayjs().format("MMMM-YYYY").toUpperCase();
-  return await getChallenge(id);
+  return fetchChallenge(id);
 };
 
-export const getChallenge = async (
+export const fetchChallenge = async (
   id: string
-): Promise<Result<Challenge, Errors>> => {
+): Promise<Result<Challenge | undefined, Errors>> => {
   console.log("Fetching Challenge: ", id);
   const params: DocumentClient.GetItemInput = {
     TableName: ENV.USERS_TABLE,
@@ -35,6 +35,6 @@ export const getChallenge = async (
     return Ok(Item as Challenge);
   } else {
     console.log(`Challenge ${id} not found`);
-    return Err({ code: 404, message: "NOT_FOUND" });
+    return Ok(undefined);
   }
 };

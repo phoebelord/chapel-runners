@@ -101,6 +101,7 @@ export interface Errors {
 export type ErrorMessages =
   | "NOT_FOUND"
   | "DB_ERROR"
+  | "CHECK_FAILED"
   | "ACCESS_TOKEN_GENERATION_FAILED"
   | "REFRESH_TOKEN_GENERATION_FAILED"
   | "COULD_NOT_READ_STRAVA_ACTIVITY";
@@ -116,7 +117,7 @@ export interface Activity {
   movingTime: number;
   elapsedTime: number;
   tags: string[];
-  points: number;
+  points: Points;
 }
 
 export interface Challenge {
@@ -137,13 +138,42 @@ export interface Challenge {
 }
 
 export interface ChallengeScore {
-  PK: string;
-  SK: string;
+  PK: string; // Challenge ID
+  SK: string; // User ID
   itemType: string;
-  "GSI1-PK"?: string;
-  "GSI1-SK"?: string;
-  teamName?: string;
+  "GSI1-PK"?: string; // Challenge ID
+  "GSI1-SK"?: string; // Group ID
   points: number;
+  stats: {
+    points: Points;
+    totals: Totals;
+  };
+}
+
+export interface Points {
+  distance: number;
+  elevation: number;
+  tags: number;
+}
+
+export interface Totals {
+  distance: number;
+  elevation: number;
+}
+
+export interface UserChallengeDetails {
+  PK: string; // User ID
+  SK: string; // Challenge ID
+  itemType: string;
+  "GSI1-PK"?: string; // Group ID
+  "GSI1-SK"?: string; // User ID
+}
+
+export interface Group {
+  PK: string; // Challenge ID
+  SK: string; // Group ID
+  itemType: string;
+  name: string;
 }
 
 export interface Tag {

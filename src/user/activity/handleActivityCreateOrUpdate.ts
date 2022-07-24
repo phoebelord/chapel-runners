@@ -1,15 +1,22 @@
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
-import { Err, Ok, Result } from "ts-results";
-import { getCurrentChallenge } from "../../challenge/getChallenge";
+import { Ok, Result } from "ts-results";
+import { fetchCurrentChallenge } from "../../challenge/fetchChallenge";
 import { ITEMS, ENV } from "../../constants";
 import { dbPut } from "../../db";
-import { Activity, Challenge, Errors, StravaActivity } from "../../types";
+import {
+  Activity,
+  Challenge,
+  Errors,
+  Points,
+  StravaActivity,
+} from "../../types";
 import {
   calculateChallengePoints,
   updateChallengeScore,
-} from "../challengeScore/handleChallengeScore";
+} from "../../challenge/challengeScore/handleChallengeScore";
 import { fetchActivityFromDB } from "./fetchActivityFromDB";
 import { fetchActivityFromStrava } from "./fetchActivityFromStrava";
+import { fetchUserChallengeDetails } from "../challengeDetails/fetchUserChallengeDetails";
 
 export const handleActivityCreateOrUpdate = async (
   userId: number,
@@ -35,42 +42,54 @@ export const handleActivityCreateOrUpdate = async (
   const activityResult = await fetchActivityFromDB(userId, activityId);
   let existingActivity: Activity | undefined;
   if (activityResult.err) {
-    const err = activityResult.val;
-    if (err.message !== "NOT_FOUND") {
-      return activityResult;
-    }
-    console.debug(`Activity ${userId} : ${activityId} is new.`);
-  } else {
-    console.debug(`Activity ${userId} : ${activityId} is exists. Updating.`);
-    existingActivity = activityResult.val;
+    return activityResult;
   }
+
+  existingActivity = activityResult.val;
 
   const tags = stravaActivity.description
     .split(" ")
     .filter((w: string) => w.startsWith("#"));
 
-  const challengeResult = await getCurrentChallenge();
+  const challengeResult = await fetchCurrentChallenge();
   let challenge: Challenge | undefined;
   if (challengeResult.err) {
-    const err = challengeResult.val;
-    if (err.message !== "NOT_FOUND") {
-      return challengeResult;
-    }
-    console.debug("Current challenge not found.");
-  } else {
-    console.debug("Current challenge found.");
-    challenge = challengeResult.val;
+    return challengeResult;
   }
 
-  let points = 0;
+  console.debug("Current challenge found.");
+  challenge = challengeResult.val;
+
+  let points: Points = {
+    distance: 0,
+    elevation: 0,
+    tags: 0,
+  };
   if (challenge) {
     points = calculateChallengePoints(stravaActivity, tags, challenge);
-    const pointsIncrement = existingActivity
-      ? points - existingActivity.points
-      : points;
+
+    let pointsIncrement = points;
+    if (existingActivity) {
+      pointsIncrement = {
+        distance: points.distance - existingActivity.points.distance,
+        elevation: points.elevation - existingActivity.points.elevation,
+        tags: points.tags - existingActivity.points.tags,
+      };
+    }
+
+    const userChallengeDetailsResults = await fetchUserChallengeDetails(
+      userId,
+      challenge.PK
+    );
+    if (userChallengeDetailsResults.err) {
+      return userChallengeDetailsResults;
+    }
+
+    const userChallengeDetails = userChallengeDetailsResults.val;
 
     const updateChallengeResult = await updateChallengeScore(
       challenge,
+      userChallengeDetails,
       userId,
       pointsIncrement
     );
@@ -87,7 +106,7 @@ const saveNewActivity = async (
   activityId: number,
   stravaActivity: StravaActivity,
   tags: string[],
-  points: number
+  points: Points
 ): Promise<Result<void, Errors>> => {
   const newActivity: Activity = {
     PK: ITEMS.USER.prefix + userId,

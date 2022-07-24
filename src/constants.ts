@@ -15,6 +15,18 @@ export const ITEMS: { [key: string]: { type: string; prefix: string } } = {
     type: "ChallengeScore",
     prefix: "cs#",
   },
+  USER_CHALLENGE_DETAILS: {
+    type: "UserChallengeDetails",
+    prefix: "cd#",
+  },
+  CHALLENGE_GROUP: {
+    type: "ChallengeGroup",
+    prefix: "g#",
+  },
+  TAG: {
+    type: "Tag",
+    prefix: "t#",
+  },
 };
 
 export const ENDPOINTS: { [key: string]: string } = {

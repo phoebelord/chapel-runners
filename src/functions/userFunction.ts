@@ -1,16 +1,14 @@
 import * as express from "express";
 import * as serverless from "serverless-http";
 import axios from "axios";
-import { ITEMS, ENDPOINTS, ENV } from "../constants";
-import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { ENDPOINTS, ENV } from "../constants";
 import {
   Errors,
   StravaAccessTokenRequest,
   StravaNewTokenResponse,
-  User,
 } from "../types";
 import { Err, Ok, Result } from "ts-results";
-import { dbPut } from "../db";
+import { createUser } from "../user/createUser";
 
 const app = express();
 
@@ -42,7 +40,7 @@ app.get("/user", async function (req, res) {
 
     const user = tokenResult.val;
     console.log(user);
-    const saveResult = await saveNewUser(user);
+    const saveResult = await createUser(user);
     if (saveResult.err) {
       let err = saveResult.val;
       res.status(err.code).json({ error: err.message });
@@ -81,37 +79,6 @@ const generateTokens = async (
     console.error(error);
     return Err({ code: 500, message: "ACCESS_TOKEN_GENERATION_FAILED" });
   }
-};
-
-const saveNewUser = async (
-  user: StravaNewTokenResponse
-): Promise<Result<void, Errors>> => {
-  const id = ITEMS.USER.prefix + user.athlete.id;
-  const newUser: User = {
-    PK: id,
-    SK: id,
-    Type: ITEMS.USER.type,
-    userId: user.athlete.id,
-    username: user.athlete.username,
-    accessToken: user.access_token,
-    refreshToken: user.refresh_token,
-    expiresAt: user.expires_at,
-    firstname: user.athlete.firstname,
-    lastname: user.athlete.lastname,
-    sex: user.athlete.sex,
-  };
-  const params: DocumentClient.PutItemInput = {
-    TableName: ENV.USERS_TABLE,
-    Item: newUser,
-  };
-
-  const putResult = await dbPut(params);
-  if (putResult.err) {
-    return putResult;
-  }
-
-  console.log(`User ${id} created`);
-  return Ok.EMPTY;
 };
 
 export const handler = serverless(app);

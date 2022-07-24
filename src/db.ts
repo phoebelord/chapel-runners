@@ -1,7 +1,4 @@
-import {
-  DocumentClient,
-  ItemCollectionKeyAttributeMap,
-} from "aws-sdk/clients/dynamodb";
+import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import { Err, Ok, Result } from "ts-results";
 import { Errors } from "./types";
 
@@ -31,8 +28,11 @@ export const dbUpdate = async (
   try {
     await getDBClient().update(params).promise();
     return Ok.EMPTY;
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
+    if (error?.code === "ConditionalCheckFailedException") {
+      return Err({ code: 500, message: "CHECK_FAILED" });
+    }
     return Err({ code: 500, message: "DB_ERROR" });
   }
 };
