@@ -36,7 +36,7 @@ plugins:
 
 functions:
   webhook-new:
-    handler: src/webhook/webhookFunction.handler
+    handler: src/functions/webhookFunction.handler
     events:
       - httpApi:
           method: GET
@@ -45,7 +45,7 @@ functions:
           method: POST
           path: /webhook
   createUser:
-    handler: src/user/userFunction.handler
+    handler: src/functions/userFunction.handler
     events:
       - httpApi:
           method: GET

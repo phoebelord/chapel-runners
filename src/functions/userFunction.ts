@@ -105,13 +105,13 @@ const saveNewUser = async (
     Item: newUser,
   };
 
-  try {
-    await dbPut(params);
-    return Ok.EMPTY;
-  } catch (error) {
-    console.log(error);
-    return Err({ code: 500, message: "DB_ERROR" });
+  const putResult = await dbPut(params);
+  if (putResult.err) {
+    return putResult;
   }
+
+  console.log(`User ${id} created`);
+  return Ok.EMPTY;
 };
 
 export const handler = serverless(app);

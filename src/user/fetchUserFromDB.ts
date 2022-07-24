@@ -4,7 +4,7 @@ import { ITEMS, ENV } from "../constants";
 import { dbGet } from "../db";
 import { Errors, User } from "../types";
 
-export const fetchUser = async (
+export const fetchUserFromDB = async (
   userId: number
 ): Promise<Result<User, Errors>> => {
   console.log("Fetching user: ", userId);
@@ -16,17 +16,17 @@ export const fetchUser = async (
     },
   };
 
-  try {
-    const { Item } = await dbGet(params);
-    console.log(Item);
-    if (Item) {
-      return Ok(Item as User);
-    } else {
-      console.info("User not found: ", userId);
-      return Err({ code: 404, message: "NOT_FOUND" });
-    }
-  } catch (error) {
-    console.error(error);
-    return Err({ code: 500, message: "DB_ERROR" });
+  const getResult = await dbGet(params);
+  if (getResult.err) {
+    return getResult;
+  }
+
+  const Item = getResult.val;
+  if (Item) {
+    console.debug(`User ${userId} found`);
+    return Ok(Item as User);
+  } else {
+    console.info(`User ${userId} not found`);
+    return Err({ code: 404, message: "NOT_FOUND" });
   }
 };

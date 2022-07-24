@@ -2,8 +2,29 @@ import axios from "axios";
 import { Err, Ok, Result } from "ts-results";
 import { ENDPOINTS } from "../../constants";
 import { Errors, StravaActivity } from "../../types";
+import { fetchUserToken } from "../fetchUserToken";
 
-export const readStravaActivity = async (
+export const fetchActivityFromStrava = async (
+  userId: number,
+  activityId: number
+): Promise<Result<StravaActivity, Errors>> => {
+  const userTokenResult = await fetchUserToken(userId);
+  if (userTokenResult.err) {
+    return userTokenResult;
+  }
+  const userToken = userTokenResult.val;
+
+  const stravaResult = await makeStravaActivityRequest(activityId, userToken);
+  if (stravaResult.err) {
+    return stravaResult;
+  }
+  const stravaActivity = stravaResult.val;
+  console.log("Got strava activity ", stravaActivity);
+
+  return Ok(stravaActivity);
+};
+
+const makeStravaActivityRequest = async (
   activityId: number,
   token: string
 ): Promise<Result<StravaActivity, Errors>> => {

@@ -9,13 +9,13 @@ import {
   StravaRefreshTokenRequest,
   StravaRefreshTokenResponse,
 } from "../types";
-import { fetchUser } from "./fetchUser";
+import { fetchUserFromDB } from "./fetchUserFromDB";
 
-export const getUserToken = async (
+export const fetchUserToken = async (
   userId: number
 ): Promise<Result<string, Errors>> => {
   console.log("Fetching token for user: ", userId);
-  const userResult = await fetchUser(userId);
+  const userResult = await fetchUserFromDB(userId);
   if (userResult.err) {
     return userResult;
   }
@@ -95,10 +95,11 @@ const updateUserToken = async (
     },
   };
 
-  try {
-    await dbUpdate(params);
-    return Ok.EMPTY;
-  } catch (error) {
-    return Err({ code: 500, message: "DB_ERROR" });
+  const updateResult = await dbUpdate(params);
+  if (updateResult.err) {
+    return updateResult;
   }
+
+  console.log(`User token updated: ${userId}`);
+  return Ok.EMPTY;
 };

@@ -4,11 +4,11 @@ import { ITEMS, ENV } from "../../constants";
 import { dbGet } from "../../db";
 import { Activity, Errors } from "../../types";
 
-export const fetchActivity = async (
+export const fetchActivityFromDB = async (
   userId: number,
   activityId: number
 ): Promise<Result<Activity, Errors>> => {
-  console.log("Fetching user: ", userId);
+  console.log(`Fetching user activity: ${userId} : ${activityId}`);
   const params: DocumentClient.GetItemInput = {
     TableName: ENV.USERS_TABLE,
     Key: {
@@ -17,17 +17,17 @@ export const fetchActivity = async (
     },
   };
 
-  try {
-    const { Item } = await dbGet(params);
-    console.log(Item);
-    if (Item) {
-      return Ok(Item as Activity);
-    } else {
-      console.info("User not found: ", userId);
-      return Err({ code: 404, message: "NOT_FOUND" });
-    }
-  } catch (error) {
-    console.error(error);
-    return Err({ code: 500, message: "DB_ERROR" });
+  const getResult = await dbGet(params);
+  if (getResult.err) {
+    return getResult;
+  }
+
+  const Item = getResult.val;
+  if (Item) {
+    console.debug(`Activity ${userId} : ${activityId} found`);
+    return Ok(Item as Activity);
+  } else {
+    console.info(`Activity not found: ${userId} : ${activityId}`);
+    return Err({ code: 404, message: "NOT_FOUND" });
   }
 };

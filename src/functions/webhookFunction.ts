@@ -6,7 +6,7 @@ import * as serverless from "serverless-http";
 import { Ok, Result } from "ts-results";
 import { ENV } from "../constants";
 import { Errors, WebhookEvent } from "../types";
-import { handleActivity } from "./handleActivity";
+import { handleActivity } from "../user/activity/handleActivity";
 
 const app = express();
 
@@ -54,6 +54,7 @@ app.post("/webhook", async function (req, res) {
   }
 });
 
+// TODO: handle user deactivate
 const handleAthlete = async (
   event: WebhookEvent
 ): Promise<Result<void, Errors>> => {

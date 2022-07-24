@@ -23,16 +23,18 @@ export const getChallenge = async (
       SK: id,
     },
   };
-  try {
-    const { Item } = await dbGet(params);
-    if (Item) {
-      console.log(Item);
-      return Ok(Item as Challenge);
-    } else {
-      return Err({ code: 404, message: "NOT_FOUND" });
-    }
-  } catch (error) {
-    console.error(error);
-    return Err({ code: 500, message: "DB_ERROR" });
+
+  const getResult = await dbGet(params);
+  if (getResult.err) {
+    return getResult;
+  }
+
+  const Item = getResult.val;
+  if (Item) {
+    console.debug(`Challenge ${id} found`);
+    return Ok(Item as Challenge);
+  } else {
+    console.log(`Challenge ${id} not found`);
+    return Err({ code: 404, message: "NOT_FOUND" });
   }
 };
